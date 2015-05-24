@@ -8,4 +8,4 @@ Virtual machine with debian jessie + odoo.
 * Your Vagrant host should ideally provide a recent version of OpenSSH that supports ControlPersist
 
 ## Up and Running
-* vagrant up
+* $ vagrant up
