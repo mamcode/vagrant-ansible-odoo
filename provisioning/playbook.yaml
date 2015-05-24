@@ -1,0 +1,55 @@
+---
+- name: Configure server with odoo for development
+  hosts: odooservers
+  sudo: True
+  vars:
+    odoo_git_repo_url: https://github.com/odoo/odoo.git
+    requirements_path: /home/vagrant/requirements.txt
+  tasks:
+    - name: install git
+      apt: name=git update_cache=yes
+    - name: clone odoo git repo
+      git: repo={{ odoo_git_repo_url }}
+           dest=/opt/odoo
+    - name: install postgresql
+      apt: name=postgresql update_cache=yes
+    - name: install header files for libpq5 (PostgreSQL library)
+      apt: name=libpq-dev update_cache=yes
+    - name: install python package installer
+      apt: name=python-pip update_cache=yes
+    - name: install header files for Python
+      apt: name=python-dev update_cache=yes
+    - name: install development files for PostgreSQL 9.4 server-side
+      apt: name=postgresql-server-dev-9.4 update_cache=yes
+    - name: install Development files for the GNOME XML library
+      apt: name=libxml2-dev update_cache=yes
+    - name: install XSLT 1.0 processing library - development kit
+      apt: name=libxslt1-dev update_cache=yes
+    - name: install Asynchronous event notification library (development files)
+      apt: name=libevent-dev update_cache=yes
+    - name: install Cyrus SASL - development files
+      apt: name=libsasl2-dev update_cache=yes
+    - name: install OpenLDAP development libraries
+      apt: name=libldap2-dev update_cache=yes
+    - name: install Development files for the JPEG library
+      apt: name=libjpeg-dev update_cache=yes
+    - name: copy requirements file for dependencies of odoo
+      copy: src=files/requirements.txt dest=/home/vagrant/requirements.txt      
+    - name: install python dependencies via pip
+      pip: requirements={{ requirements_path }}
+    - name: copy (replace) sudoers file
+      copy: src=files/sudoers dest=/etc/sudoers
+    - name: create odoo user for postgres
+      sudo_user: postgres
+      postgresql_user: >
+        name=odoo
+        password=odoo
+        role_attr_flags=CREATEDB,NOCREATEROLE,NOSUPERUSER
+    - name: install nodejs via aptitude
+      apt: name=nodejs update_cache=yes
+    - name: install npm via aptitude
+      apt: name=npm update_cache=yes
+    - name: install less via npm
+      npm: name=less global=yes
+    - name: install less-plugin-clean-css
+      npm: name=less-plugin-clean-css global=yes
