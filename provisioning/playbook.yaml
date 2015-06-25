@@ -6,7 +6,9 @@
   vars:
     odoo_git_repo_url: https://github.com/odoo/odoo.git
     requirements_path: /home/vagrant/requirements.txt
-
+    pg_conf_file: /etc/postgresql/9.4/main/postgresql.conf
+    pg_hba_file: /etc/postgresql/9.4/main/pg_hba.conf
+    
   tasks:
 
     - name: install git
@@ -88,3 +90,24 @@
 
     - name: Automating Odoo startup and shutdown
       command: update-rc.d odoo-server defaults
+
+    - name: Enabling postgres to listen remote connections
+      lineinfile: >
+        dest={{ pg_conf_file }}
+        regexp="^listen_addresses "
+        insertafter="^#listen_addresses "
+        line="listen_addresses = '*'"
+      notify: Restart postgresql
+
+    - name: Enabling odoo user for access to databases of postgres
+      lineinfile: >
+        dest={{ pg_hba_file }}
+        regexp="^#host "
+        insertafter="^#host "
+        line='host    all     odoo        10.0.2.0/24            md5'
+      notify: Restart postgresql
+      
+  handlers:
+
+    - name: Restart postgresql
+      service: name=postgresql state=restarted
